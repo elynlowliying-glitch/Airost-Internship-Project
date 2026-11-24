@@ -12,7 +12,7 @@ everyCENT is deployed and accessible online through Firebase Hosting.
 - Sign in using an authorised Google account.
 - Access the features available according to your assigned user role.
 
-Live Website: [Insert your Firebase Hosting URL]
+Live Website: https://everycent-404bestiesnotfound.web.app/
 
 Users do not need to download the project, install Visual Studio Code or run Live Server to use the online application.
 
