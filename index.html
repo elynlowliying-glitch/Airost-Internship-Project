@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="University club budget and claims management system"
+  />
+
+  <title>everyCENT | Budget Management</title>
+  <link rel="icon" type="image/png" href="/images/logo.png?v=3">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="status"></div>
+
+  <!-- =========================
+       LOGIN SCREEN
+  ========================== -->
+  <main id="login-screen" class="login-screen">
+
+    <!-- Login Theme Toggle -->
+    <button
+      id="login-theme-toggle"
+      class="theme-toggle login-theme-toggle"
+      type="button"
+      aria-label="Switch to night view"
+      title="Toggle day/night mode"
+    >
+      <span class="theme-icon sun-icon">☀</span>
+      <span class="theme-icon moon-icon">☾</span>
+      <span class="theme-slider"></span>
+    </button>
+
+    <section class="login-panel">
+
+      <!-- Brand -->
+      <div class="brand brand-large">
+        <span class="brand-mark">$</span>
+        <span>everyCENT</span>
+      </div>
+
+      <!-- Login Introduction -->
+      <div class="login-copy">
+        <p class="eyebrow">CLUB FINANCE, SIMPLIFIED</p>
+
+        <h1>Manage your club finances with clarity.</h1>
+
+        <p class="muted">
+          Track activity budgets, submit reimbursement claims,
+          and keep every transaction organised in one place.
+        </p>
+      </div>
+
+      <!-- Google Login -->
+      <button
+        id="google-login"
+        class="btn btn-primary btn-google"
+        type="button"
+      >
+        <span class="google-g">G</span>
+        Continue with Google
+      </button>
+
+      <p class="login-foot muted">
+        Access is limited to registered club members.
+      </p>
+
+    </section>
+  </main>
+
+
+  <!-- =========================
+       MAIN APPLICATION
+  ========================== -->
+  <div id="app" class="app hidden">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+
+      <div class="brand">
+        <span class="brand-mark">$</span>
+        <span>everyCENT</span>
+      </div>
+
+      <div class="club-label">WORKSPACE</div>
+
+      <nav id="navigation"></nav>
+
+      <!-- Sidebar Bottom -->
+      <div class="sidebar-bottom">
+
+        <div class="user-mini">
+          <img
+            id="user-avatar"
+            alt=""
+            src="https://ui-avatars.com/api/?name=User&background=e9edff&color=3949ab"
+          >
+
+          <div>
+            <strong id="user-name">User</strong>
+            <small id="user-role">Committee</small>
+          </div>
+        </div>
+
+        <button id="logout" class="logout-btn" type="button">
+          ↪ <span>Log out</span>
+        </button>
+
+      </div>
+    </aside>
+
+
+    <!-- Main Content Area -->
+    <section class="main-area">
+
+      <!-- Top Navigation Bar -->
+      <header class="topbar">
+
+        <button
+          id="mobile-menu"
+          class="mobile-menu"
+          type="button"
+          aria-label="Toggle menu"
+        >
+          ☰
+        </button>
+
+        <div>
+          <p class="eyebrow" id="page-kicker">OVERVIEW</p>
+          <h2 id="page-title">Dashboard</h2>
+        </div>
+
+        <div class="topbar-right">
+
+          <span class="date-label" id="today-label"></span>
+
+          <!-- Dashboard Theme Toggle -->
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            type="button"
+            aria-label="Switch to night view"
+            title="Toggle day/night mode"
+          >
+            <span class="theme-icon sun-icon">☀</span>
+            <span class="theme-icon moon-icon">☾</span>
+            <span class="theme-slider"></span>
+          </button>
+
+          <div class="top-avatar" id="top-avatar">U</div>
+
+        </div>
+      </header>
+
+
+      <!-- Dynamic Page Content -->
+      <main id="page-content" class="page-content"></main>
+
+
+      <!-- Footer -->
+      <footer>
+        everyCENT <span>•</span> University Club Finance Workspace
+      </footer>
+
+    </section>
+  </div>
+
+
+  <!-- =========================
+     JAVASCRIPT LIBRARIES
+  ========================== -->
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- jsPDF AutoTable Plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+
+
+  <!-- Main Application Script -->
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>

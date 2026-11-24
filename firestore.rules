@@ -1,0 +1,176 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Check whether the user is logged in.
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Check whether the user has a profile in Firestore.
+    function hasUserProfile() {
+      return signedIn()
+        && exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)
+        );
+    }
+
+    // Get the logged-in user's profile.
+    function userDoc() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      ).data;
+    }
+
+    // Check whether the user is an approved committee member or treasurer.
+    function isApprovedMember() {
+      return hasUserProfile()
+        && userDoc().approved == true
+        && userDoc().role in ['committee', 'treasurer'];
+    }
+
+    // Check whether the user is an approved treasurer.
+    function isTreasurer() {
+      return hasUserProfile()
+        && userDoc().role == 'treasurer'
+        && userDoc().approved == true;
+    }
+
+    // ==========================================
+    // USERS
+    // ==========================================
+
+    match /users/{uid} {
+
+      // Users can read their own profile.
+      // Treasurers can read all user profiles.
+      allow read: if signedIn()
+        && (request.auth.uid == uid || isTreasurer());
+
+      // Allow a new user to register their own pending profile.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'pending'
+        && request.resource.data.approved == false
+        && request.resource.data.keys().hasAll([
+          'fullName',
+          'email',
+          'profilePicture',
+          'role',
+          'approved',
+          'registeredAt',
+          'approvedAt',
+          'approvedBy'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'fullName',
+          'email',
+          'profilePicture',
+          'role',
+          'approved',
+          'registeredAt',
+          'approvedAt',
+          'approvedBy'
+        ]);
+
+      // Only an approved treasurer can approve or reject
+      // a member whose current status is pending.
+      allow update: if isTreasurer()
+        && resource.data.role == 'pending'
+        && resource.data.approved == false
+        && (
+          (
+            request.resource.data.role == 'committee'
+            && request.resource.data.approved == true
+            && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'role',
+                'approved',
+                'approvedAt',
+                'approvedBy'
+              ])
+          )
+          ||
+          (
+            request.resource.data.role == 'rejected'
+            && request.resource.data.approved == false
+            && request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasOnly([
+                'role',
+                'approved',
+                'approvedBy',
+                'reviewedAt'
+              ])
+          )
+        );
+
+      // Profiles cannot be deleted through the app.
+      allow delete: if false;
+    }
+
+    // ==========================================
+    // ACTIVITIES
+    // ==========================================
+
+    match /activities/{activityId} {
+
+      allow read: if isApprovedMember();
+
+      allow create, update, delete: if isTreasurer();
+    }
+
+    // ==========================================
+    // CLAIMS
+    // ==========================================
+
+    match /claims/{claimId} {
+
+      // Members can read their own claims.
+      // Treasurers can read all claims.
+      allow read: if isApprovedMember()
+        && (
+          resource.data.userId == request.auth.uid
+          || isTreasurer()
+        );
+
+      // Approved members can submit their own claims.
+      allow create: if isApprovedMember()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'Pending';
+
+      // Only treasurers can approve or reject pending claims.
+      allow update: if isTreasurer()
+        && resource.data.status == 'Pending'
+        && request.resource.data.status in ['Approved', 'Rejected']
+        && request.resource.data.diff(resource.data)
+          .affectedKeys()
+          .hasOnly([
+            'status',
+            'reviewedBy',
+            'reviewedAt',
+            'rejectionReason'
+          ]);
+
+      // Members can delete only their own pending claims.
+      allow delete: if isApprovedMember()
+        && resource.data.userId == request.auth.uid
+        && resource.data.status == 'Pending';
+    }
+
+    // ==========================================
+    // FINANCIAL RECORDS
+    // ==========================================
+
+    match /financialRecords/{recordId} {
+
+      allow read, create: if isTreasurer();
+
+      allow update, delete: if false;
+    }
+  }
+}
