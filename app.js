@@ -1016,9 +1016,24 @@ $("#claim-form").elements.amount.addEventListener(
 );
   $("#claim-form").addEventListener("submit",submitClaim);
 }
+
 async function submitClaim(e) {
   e.preventDefault();
   const form = e.target;
+  const submitButton = form.querySelector(
+    'button[type="submit"]'
+  );
+  // Prevent duplicate submissions
+  if (submitButton.disabled) return;
+  const originalButtonText = submitButton.textContent;
+  const setLoading = (message) => {
+    submitButton.disabled = true;
+    submitButton.textContent = message;
+  };
+  const restoreButton = () => {
+    submitButton.disabled = false;
+    submitButton.textContent = originalButtonText;
+  };
   const fd = new FormData(form);
   const file = fd.get("receipt");
   // Validate receipt
@@ -1069,10 +1084,10 @@ async function submitClaim(e) {
     rejectionReason: ""
   };
   try {
+    setLoading("Processing claim...");
     if (USE_FIREBASE) {
-
-      // 1. Upload receipt to Google Drive
-      toast("Uploading receipt to Google Drive...");
+      // 1. Upload receipt and grant treasurer access
+      setLoading("Uploading receipt...");
       const receipt = await uploadReceiptToDrive(
         file,
         claim.id
@@ -1080,8 +1095,8 @@ async function submitClaim(e) {
       claim.receiptName = receipt.receiptName;
       claim.receiptURL = receipt.receiptURL;
       claim.receiptDriveFileId = receipt.receiptDriveFileId;
-
       // 2. Save claim information to Firestore
+      setLoading("Saving claim...");
       const firestore = await import(
         "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
       );
@@ -1090,7 +1105,6 @@ async function submitClaim(e) {
         claim
       );
     } else {
-      // Demo mode only
       claim.receiptName = file.name;
     }
     // 3. Update local application data
@@ -1103,8 +1117,10 @@ async function submitClaim(e) {
       err.message || "Unable to submit claim. Please try again.",
       "error"
     );
+    restoreButton();
   }
 }
+
 
 function renderClaimsList(resultsOnly) {
   let claims = localData.claims.filter(
